@@ -1,0 +1,66 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Webhook Test</title>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.1.3/socket.io.min.js"></script>
+	<script>
+		var socket = io('http://localhost:5000');
+			socket.on('connect', function() {
+		console.log('Connected to server');
+	});
+
+	socket.on('message', function(data) {
+		console.log('Received message: ' + data.answer);
+		var answerDiv = document.getElementById('answer');
+		answerDiv.innerHTML = data.answer;
+	});
+
+	function sendMessage() {
+		var query = document.getElementById('query').value;
+		socket.emit('message', {query: query});
+	}
+
+	function sendFile() {
+		var fileInput = document.getElementById('fileInput');
+		var file = fileInput.files[0];
+		var formData = new FormData();
+		formData.append('pdf_file', file, file.name);  // add the filename to the form data
+		var xhr = new XMLHttpRequest();
+		xhr.open('POST', 'http://localhost:5000/pdf');
+		xhr.onload = function() {
+			console.log(xhr.responseText);
+			var summaryButton = document.getElementById('summaryButton');
+			summaryButton.disabled = false;  // enable the summary button after the PDF is loaded
+		};
+		xhr.send(formData);
+	}
+
+	function generateSummary() {
+		var xhr = new XMLHttpRequest();
+		xhr.open('GET', 'http://localhost:5000/summary');
+		xhr.onload = function() {
+			console.log(xhr.responseText);
+			var summaryDiv = document.getElementById('summary');
+			summaryDiv.innerHTML = xhr.response.summary;
+		};
+		xhr.send();
+	}
+</script>
+</head>
+<body>
+
+
+
+	<input type="text" id="query" placeholder="Type your message here">
+	<button onclick="sendMessage()">Send</button>
+	<br><br>
+	<input type="file" id="fileInput">
+	<button onclick="sendFile()">Upload PDF</button>
+	<button id="summaryButton" onclick="generateSummary()" disabled>Generate Summary</button>
+	<br><br>
+	<div id="answer"></div>
+	<br><br>
+	<div id="summary"></div>
+</body>
+</html>

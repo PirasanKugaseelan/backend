@@ -16,20 +16,20 @@ from langchain.chains.summarize import load_summarize_chain
 from modify import OpenAIEmbeddings
 from langchain.vectorstores import Chroma
 from langchain.chains import RetrievalQA
-
+from flask import Flask, request, abort
 # local server object sender im using.
 """ It is important to encode using b before sending it and .decode will save it properly  """
 import socket
 from rich import print
 from rich.console import Console
 from rich.table import Table
-
+flask_app = Flask(__name__)
 load_dotenv()  # load variables from .env file
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
 # Initialize the chatbot
 chatbot = Chat_With_PDFs_and_Summarize()
-
+socketio = SocketIO(flask_app, cors_allowed_origins="*")
 @flask_app.route("/pdf", methods=["POST"])
 def handle_pdf():
     """
